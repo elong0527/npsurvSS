@@ -1,0 +1,111 @@
+---
+title: "npsurvSS Overview"
+output: html_document
+date: "2022-08-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## npsurvSS Overview 
+
+- focus on fixed design 
+- implement different type of design for time-to-event data. 
+
+## OOP Definition 
+
+The package define an OOP object as below.  
+
+```
+create_arm <- function(size,
+                       accr_time,
+                       accr_dist = "pieceuni",
+                       accr_interval = c(0, accr_time),
+                       accr_param = NA,
+                       surv_cure = 0,
+                       surv_interval = c(0, Inf),
+                       surv_shape=1,
+                       surv_scale,
+                       loss_shape=1,
+                       loss_scale,
+                       follow_time = Inf,
+                       total_time = Inf) 
+```
+
+It is an OOP object contain all components for a single arm. 
+The design provide flexibility to extend by 
+
+- define different arms for each stratum, each can have complete freedom. 
+  - e.g. define a stratum that is added/droped in the middle of a trial. 
+- potential extend to adaptive design for quick simulation based evaluation.
+  - e.g a comparision between group sequential design and other adaptive design with limited budget. 
+
+## Distribution Definition
+
+The package define a set of distribtion to streamline mathmatical implementation.
+
+
+For each distribution, we can implement `p`, `q`, `d`, `r`, `h`. 
+This is the same strategy as in `npsurvSS`, where we have 
+
+- accumulation distribution `paccr`, `qaccr`, `daccr`, `raccr`, `haccr`.
+- event distribtion `psurv`, `qsurv`, `dsurv`, `rsurv`, `hsurv`. 
+- censoring distribution `ploss`, `qloss`, `dloss`, `rloss`, `hloss`.
+
+## Simulation one Arm 
+
+With the OOP object and distribution functions `rsurv`, `raccr` and `rloss`, 
+the data simulation step is simply simulate data from
+a `arm` object using `rsurv`, `raccr` and `rloss`. 
+
+With a combination of different arm, and different analysis approach, 
+we have full flexibility to evaluate operational characteritics 
+for complicated group sequential design and adaptive design. 
+
+## Probability of Event in Calendar Time  
+
+For each Arm, the probability of event at different time point is independent of study design 
+given the `arm` OOP object. 
+
+The key is to define `p`, `q`, `d` and `h` of counting process by 
+distributions defined previously. 
+
+Here is the definition in `npsurvSS`. 
+
+```{r, eval = FALSE}
+dens_event <- function(arm, teval) {
+  dsurv(teval, arm) *
+    ploss(teval, arm, lower.tail=F) *
+    paccr(pmin(arm$accr_time, arm$total_time-teval), arm)
+}
+```
+
+## Probability at Risk in Calendar Time 
+
+For each Arm, the probability at risk at different time point is independent of study design
+given the `arm` OOP object.
+
+The key is to define `p`, `q`, `d` and `h` of counting process by 
+distributions defined previously. 
+
+Here is the definition in `npsurvSS`. 
+
+```{r, eval = FALSE}
+prob_risk <- function(arm, teval) {
+  psurv(teval, arm, lower.tail=F) *
+    ploss(teval, arm, lower.tail=F) *
+    paccr(pmin(arm$accr_time, arm$total_time-teval), arm)
+}
+```
+
+
+## Power and Sample Size 
+
+For fixed design, the sample size can be obtained 
+after we can derive the effect size based on the information we have above. 
+
+The details is in Godwin's paper or our training materials. 
+
+
+

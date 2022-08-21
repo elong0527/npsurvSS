@@ -1,0 +1,113 @@
+---
+title: "Grammer of Study Design Planning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background 
+
+Develop and maintain one grammer package for study design 
+can be challenge. 
+
+- Study design can have many possibility. 
+- Understand end-to-end from computation details to design consideration
+is a long and challenge learning curve.
+
+
+## Suggestion 
+
+- Follow `tidyverse` or `tidymodel` to divide components in a logical way. For example:
+  - an R package to implement all spending functions. 
+  - an R package to implement survival, censoring and accumulate distribution.
+  - an R package to implement computation utility functions for study design.  
+  - an R package to implement study design grammer in high level. 
+- Identify developer and maintainer for each components. 
+  - some maybe internal, some can be outsourcing. 
+
+
+## Spending functions 
+
+We can move all spending functions from `gsDesign` to a independent package. 
+
+- The package will have 0 dependency.
+- `gsDesign`, `gsDesign2` can both depends on the package to aovid `gsDesign2` depends on `gsDesign`. 
+
+The package scope is limited, `Hongtao` may lead the initial development to finalize the first version on CRAN.
+a junior statistician with interest in study design can maintain it in the future. 
+
+## Design distribution 
+
+For study design in time-to-event data, we need to specify distribution of 
+
+- Survival time 
+- Censoring time 
+- Accumulation time 
+
+We typically use: 
+
+- exponential 
+- piecewise exponential 
+- piecewise uniform 
+- weibull 
+
+For each distribution, we can implement `p`, `q`, `d`, `r`, `h`. 
+This is the same strategy as in `npsurvSS`, where we have 
+
+- `psurv`, `qsurv`, `dsurv`, `rsurv`, `hsurv`. 
+- `paccr`, `qaccr`, `daccr`, `raccr`, `haccr`.
+- `ploss`, `qloss`, `dloss`, `rloss`, `hloss`.
+
+With the layer of abstraction, other design component is a combination of those functions 
+to enhance 
+
+- connection between math formula and implementation. 
+- readability of R code. 
+
+The package scope is limited, `Yilong` may lead the initial development to finalize the first version on CRAN.  
+a junior statistician with interest in study design can maintain it in the future. 
+
+## Computation details 
+
+For group sequential design, we apply two approches to calculate boundary probability: 
+
+- chain rule for most design (AHR, wlr) 
+- multivariate normal (MaxCombo)
+
+The part is computational intensive, and need minimal statistical knowledge. 
+
+The package scope is limited, `Yujie` may lead the initial development to finalize the first version on CRAN.  
+A senior developer with good understanding in `Rcpp` can maintain it in the future. 
+
+## Study Design Grammer
+
+The purpose of the package is to define high level structure and should avoid statistical and computation details. 
+
+- OOP object definition for study design 
+
+The package scope is limited, `Nan` may lead the initial development to finalize the first version on CRAN.
+A senior developer with good understanding in OOP can maintain it in the future. 
+
+
+## Oversee Committee 
+
+With a divide and conquer approach, we will need an oversee committee to ensure 
+each component (R package) can be integrated seamlessly. 
+
+The committee include 
+
+- senior statisticians 
+  + Keaven
+  + Larry 
+- lead developer of each component
+  + Yujie 
+  + Nan 
+  + Hongtao 
+  + Nan 
+
+With limited scope of each component and existing work we have, we may target an alpha-release for each component by the end of 2022. 
+
+> The alpha-release will not provide all study design capability, 
+but can build a good foundation for the implemenation in next stage.  
